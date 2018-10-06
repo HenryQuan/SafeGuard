@@ -29,16 +29,30 @@ const mydata = {
  */
 
 // take object, path and the default value
-const guard = (obj, path, dval) => {
+const guard = (path, dval) => {
   // check if object is valid and path does not start with or end with '.'
-  if (obj && (path.startsWith('.') || path.endsWith('.'))) return dval;
-  else {
-    // get path as an array
+  if (!path.startsWith('.') && !path.endsWith('.')) {
+    // get path as an array and it must have at least 2 elements
     let p = path.split('.');
-    // o is the object (accumulator), and n is from path (current value)
-    // o && o[n] -> to go further or just return default value
-    return p.reduce((o, n) => (o && o[n]) ? o[n] : dval, obj)
-  }
+    if (p && p.length > 0) {
+      // eval the first string to be object
+      let obj = eval(p.shift());
+
+      // o is the object (accumulator), and n is from path (current value)
+      // o && o[n] -> to go further or just return default value
+      // only asking for the object
+      if (p.length == 1) return obj;
+      return p.reduce((o, n) => (o && o[n]) ? o[n] : dval, obj);
+    }
+  }   
+  return dval;
 }
 
-console.log(guard(mydata, 'hello', 0));
+// Some basic tests
+var assert = require('assert');
+assert(guard('mydata.hello.hello.hello.hello.yes', 0) == 7);
+assert(guard('mydata', 0) === mydata);
+assert(guard('mydata.hello.hello.hello.hello.hello', false) == false);
+assert(guard('mydata.hello.hello.dsadas', 0) == 0);
+
+// If you pass undefined obj eval will complain
